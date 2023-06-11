@@ -1,49 +1,100 @@
+const fs = require("fs");
+const { promisify } = require("util");
+
 class ProductManager {
-  constructor() {
-    this.products = []; // arreglo para almacenar los productos
-    this.nextId = 1; // variable para almacenar el próximo id de producto
+  constructor(path) {
+    this.path = path;
+    this.products = [];
+    this.nextId = 1;
+    this.loadProducts();
   }
 
-  addProduct(title, description, price, thumbnail, code, stock) {
-    if (!title || !description || !price || !thumbnail || !code || !stock) {
-      console.log("Todos los campos son obligatorios."); // muestra un mensaje de error si falta algun campo requerido
+  loadProducts() {
+    try {
+      const data = fs.readFileSync(this.path, "utf-8");
+      this.products = JSON.parse(data);
+      if (this.products.length > 0) {
+        const lastProduct = this.products[this.products.length - 1];
+        this.nextId = lastProduct.id + 1;
+      }
+    } catch (error) {
+      this.products = [];
+    }
+  }
+
+  async saveProducts() {
+    try {
+      const writeFile = promisify(fs.writeFile);
+      const data = JSON.stringify(this.products, null, 2);
+      await writeFile(this.path, data, "utf-8");
+    } catch (error) {
+      console.log("Error al guardar los productos en el archivo.");
+    }
+  }
+
+  addProduct(product) {
+    if (
+      !product.title ||
+      !product.description ||
+      !product.price ||
+      !product.thumbnail ||
+      !product.code ||
+      !product.stock
+    ) {
+      console.log("Todos los campos son obligatorios.");
       return;
     }
 
-    const existingProduct = this.products.find(
-      (product) => product.code === code
-    );
+    const existingProduct = this.products.find((p) => p.code === product.code);
     if (existingProduct) {
-      console.log("El código del producto ya existe."); // muestra un mensaje de error si el codigo del producto ya existe
+      console.log("El código del producto ya existe.");
       return;
     }
 
-    const product = {
+    const newProduct = {
       id: this.nextId,
-      title,
-      description,
-      price,
-      thumbnail,
-      code,
-      stock,
+      ...product,
     };
 
-    this.products.push(product); // agrega el producto al arreglo de productos
-    this.nextId++; // incrementa el id para el próximo producto
+    this.products.push(newProduct);
+    this.nextId++;
+    this.saveProducts();
   }
 
   getProducts() {
-    return this.products; // devuelve el arreglo de productos
+    return this.products;
   }
 
   getProductById(id) {
-    const product = this.products.find((product) => product.id === id);
+    const product = this.products.find((p) => p.id === id);
     if (product) {
-      return product; // devuelve el producto si se encuentra el id correspondiente
+      return product;
     } else {
-      console.log("Not found"); // muestra un mensaje de error si no se encuentra el id del producto
+      console.log("Producto no encontrado.");
+    }
+  }
+
+  updateProduct(id, updatedFields) {
+    const index = this.products.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      const updatedProduct = {
+        ...this.products[index],
+        ...updatedFields,
+      };
+      this.products[index] = updatedProduct;
+      this.saveProducts();
+    } else {
+      console.log("Producto no encontrado.");
+    }
+  }
+
+  deleteProduct(id) {
+    const index = this.products.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      this.products.splice(index, 1);
+      this.saveProducts();
+    } else {
+      console.log("Producto no encontrado.");
     }
   }
 }
-
-let manager = new ProductManager();
