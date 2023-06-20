@@ -61,8 +61,12 @@ class ProductManager {
     this.saveProducts();
   }
 
-  getProducts() {
-    return this.products;
+  getProducts(limit) {
+    if (limit) {
+      return this.products.slice(0, limit);
+    } else {
+      return this.products;
+    }
   }
 
   getProductById(id) {
@@ -71,6 +75,7 @@ class ProductManager {
       return product;
     } else {
       console.log("Producto no encontrado.");
+      return null; // Agrega un return null para indicar que el producto no fue encontrado
     }
   }
 
@@ -98,3 +103,5 @@ class ProductManager {
     }
   }
 }
+
+module.exports = ProductManager;
