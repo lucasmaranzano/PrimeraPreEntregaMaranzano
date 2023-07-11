@@ -12,10 +12,9 @@ const productManager = new ProductManager('./src/productos.json');
 const cartManager = new CartManager('./src/carts.json');
 
 app.use(express.json());
-app.engine('handlebars', handlebars.create({}).engine);
+app.engine('handlebars', handlebars.create({ defaultLayout: 'home' }).engine);
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static('public'));
 
 app.get('/api/productos', (req, res) => {
   const limit = req.query.limit;
