@@ -41,25 +41,23 @@ class ProductManager {
   }
 
   addProduct(product) {
-    if (!product.title || !product.description || !product.code || !product.price || product.status === undefined || !product.stock || !product.category) {
+    if (!product.title || !product.description || !product.price) {
       throw new Error("Todos los campos son obligatorios, excepto thumbnails");
     }
-
+  
     const newProduct = {
       id: this.generateId(),
-      title: product.title,
-      description: product.description,
-      code: product.code,
-      price: product.price,
-      status: product.status,
-      stock: product.stock,
-      category: product.category,
-      thumbnails: product.thumbnails || [],
-      ...product,
+      title: product.title || "",
+      description: product.description || "",
+      price: parseFloat(product.price) || 0,
+      thumbnail: product.thumbnail || "",
+      code: product.code || "",
+      stock: parseInt(product.stock) || 0,
     };
     this.productos.push(newProduct);
     this.saveproductos();
   }
+  
 
   updateProduct(id, productData) {
     const productIndex = this.productos.findIndex((product) => product.id === id);
